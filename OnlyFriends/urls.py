@@ -17,6 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from contacts.views import contact
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('contacts/',contact ,name='contacts'), #endpoint, render function in apps.view, {url "apps:views"}
 ]
