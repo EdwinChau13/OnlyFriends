@@ -1,0 +1,50 @@
+<h1>Add New Girlfriend Contact</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <fieldset>
+        <legend>Person Info</legend>
+        <label for="id_first_name">First Name:</label>
+        <input type="text" name="first_name" id="id_first_name" required><br>
+
+        <label for="id_last_name">Last Name:</label>
+        <input type="text" name="last_name" id="id_last_name" required><br>
+
+        <label for="id_age">Age:</label>
+        <input type="number" name="age" id="id_age" min="0" required><br>
+
+        <label for="id_email">Email:</label>
+        <input type="email" name="email" id="id_email" required><br>
+
+        <label for="id_phone_number">Phone Number:</label>
+        <input type="text" name="phone_number" id="id_phone_number" required><br>
+
+        <label for="id_relationship_status">Relationship Status:</label>
+        <input type="text" name="relationship_status" id="id_relationship_status" required><br>
+
+        <label for="id_photo">Photo:</label>
+        <input type="file" name="photo" id="id_photo" accept="image/*"><br>
+    </fieldset>
+    <fieldset>
+        <legend>Preference</legend>
+        <label for="id_birthday">Birthday:</label>
+        <input type="text" name="birthday" id="id_birthday" required><br>
+
+        <label for="id_favorite_flower">Favorite Flower:</label>
+        <input type="text" name="favorite_flower" id="id_favorite_flower"><br>
+
+        <label for="id_favorite_movie_genre">Favorite Movie Genre:</label>
+        <input type="text" name="favorite_movie_genre" id="id_favorite_movie_genre"><br>
+
+        <label for="id_favorite_food">Favorite Food:</label>
+        <input type="text" name="favorite_food" id="id_favorite_food"><br>
+
+        <label for="id_pet_name">Pet Name:</label>
+        <input type="text" name="pet_name" id="id_pet_name"><br>
+    </fieldset>
+    <fieldset>
+        <legend>Availability</legend>
+        <label for="id_date_available">Date Available:</label>
+        <input type="text" name="date_available" id="id_date_available" required><br>
+    </fieldset>
+    <button type="submit">Save</button>
+</form>
