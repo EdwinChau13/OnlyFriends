@@ -5,12 +5,20 @@ from django.contrib import messages
 from django.http import HttpResponse
 from datetime import datetime
 
+#For photo import
+import os
+from django.core.files import File
+
 # Create your views here.
 def contact(request):
     persons = Person.objects.all()
     if request.method == 'POST':
         if 'delete_all' in request.POST:
             Person.objects.all().delete()
+            return redirect('contact')
+        elif 'delete_selected' in request.POST:
+            ids = request.POST.getlist('selected')
+            Person.objects.filter(id__in=ids).delete()
             return redirect('contact')
         # ... handle other POST actions ...
     persons = Person.objects.all()
@@ -22,7 +30,23 @@ def import_csv(request):
         decoded_file = csv_file.read().decode('utf-8').splitlines()
         reader = csv.DictReader(decoded_file)
         imported = 0
+        image_base_path = '/Users/edwinchau/Downloads/girls/'
+        #image_base_path = '/Users/edwinchau/Desktop/OnlyFriends/media/photos/'
+        
         for row in reader:
+            # Handle photo import
+            photo_file = None
+            photo_path = row.get('photo_path', '').strip()
+            print("photo_path",photo_path)
+            if photo_path:
+                full_photo_path = photo_path
+                # If not absolute, join with base path
+                if not os.path.isabs(photo_path):
+                    full_photo_path = os.path.join(image_base_path, photo_path)
+                    print(full_photo_path)
+                if os.path.exists(full_photo_path):
+                    photo_file = File(open(full_photo_path, 'rb'), name=os.path.basename(full_photo_path))
+            
             # Create or update Person
             person, created = Person.objects.get_or_create(
                 first_name=row['first_name'],
@@ -34,13 +58,20 @@ def import_csv(request):
                     'relationship_status': row['relationship_status'],
                 }
             )
+            
+            # If updating, update fields and photo if provided
             if not created:
-                # Update existing person if needed
                 person.age = row['age']
                 person.email = row['email']
                 person.phone_number = row['phone_number']
                 person.relationship_status = row['relationship_status']
-                person.save()
+            if photo_file:
+                # Delete old photo if exists and filename is the same
+                if person.photo and person.photo.name != photo_file.name:
+                    person.photo.delete(save=False)
+                person.photo.save(os.path.basename(photo_file.name), photo_file, save=False)
+            person.save()
+            
             # Create or update Preference
             Preference.objects.update_or_create(
                 person=person,
@@ -74,6 +105,7 @@ def export_csv(request):
     # Write header
     writer.writerow([
         'first_name', 'last_name', 'age', 'email', 'phone_number', 'relationship_status',
+        'photo_path',
         'birthday', 'favorite_flower', 'favorite_movie_genre', 'favorite_food', 'pet_name',
         'date_available'
     ])
@@ -81,6 +113,8 @@ def export_csv(request):
     for person in Person.objects.all():
         preference = person.preference.first()
         availability = person.availability.first()
+        # Get the photo filename if it exists, else empty string
+        photo_path = os.path.basename(person.photo.name) if person.photo and person.photo.name else ''
         writer.writerow([
             person.first_name,
             person.last_name,
@@ -88,6 +122,7 @@ def export_csv(request):
             person.email,
             person.phone_number,
             person.relationship_status,
+            photo_path,
             preference.birthday if preference else '',
             preference.favorite_flower if preference else '',
             preference.favorite_movie_genre if preference else '',

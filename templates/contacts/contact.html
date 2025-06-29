@@ -7,49 +7,77 @@
         th, td { padding: 5px; }
     </style>
 </head>
+<body>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <button type="submit" name="delete_all">Delete All</button>
+        <button type="submit" id="delete-all-btn" name="delete_all">Delete All</button>
         <a href="{% url 'import_csv' %}"><button type="button">Import CSV</button></a>
         <a href="{% url 'export_csv' %}"><button type="button">Export CSV</button></a>
         <a href="{% url 'add_record' %}"><button type="button">Add Single Record</button></a>
+        <table>
+            <tr>
+                <td colspan="8" style="text-align: right; font-weight: bold;">
+                    No. of Contacts: {{ persons.count }}
+                </td>
+            </tr>
+            <tr>
+                <th></th>
+                <th>Hot Pic</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Preference</th>
+                <th>Availability</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+            {% for person in persons %}
+            <tr>
+                <td><input type="checkbox" name="selected" value="{{ person.id }}"></td>
+                <td>
+                    {% if person.photo %}
+                        <img src="{{ person.photo.url }}" alt="Photo" width="200px">
+                    {% else %}
+                        <span title="No photo" style="font-size:2em; color:#ccc;">&#128247;</span>
+                    {% endif %}
+                </td>
+                <td>{{ person.first_name }} {{ person.last_name }}</td>
+                <td>{{ person.phone_number }}</td>
+                <td><a href="{% url 'preference' person.id %}">Preference</a></td>
+                <td><a href="{% url 'availability' person.id %}">Availability</a></td>
+                <td>
+                    <a href="{% url 'edit_person' person.id %}">Edit</a>
+                </td>
+                <td>
+                    <form method="post" action="{% url 'delete_person' person.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete this contact?');">Delete</button>
+                    </form>
+                </td>            
+            </tr>
+            {% endfor %}
+        </table>
     </form>
-    <table>
-        <tr>
-            <th>Checkbox</th>
-            <th>Hot Pic</th>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>Preference</th>
-            <th>Availability</th>
-            <th>Edit</th>
-            <th>Delete</th>
-        </tr>
-        {% for person in persons %}
-        <tr>
-            <td><input type="checkbox" name="selected" value="{{ person.id }}"></td>
-            <td>
-                {% if person.photo %}
-                    <img src="{{ person.photo.url }}" alt="Photo" width="200px">
-                {% else %}
-                    <span title="No photo" style="font-size:2em; color:#ccc;">&#128247;</span>
-                {% endif %}
-            </td>
-            <td>{{ person.first_name }} {{ person.last_name }}</td>
-            <td>{{ person.phone_number }}</td>
-            <td><a href="{% url 'preference' person.id %}">Preference</a></td>
-            <td><a href="{% url 'availability' person.id %}">Availability</a></td>
-            <td>
-                <a href="{% url 'edit_person' person.id %}">Edit</a>
-            </td>
-            <td>
-                <form method="post" action="{% url 'delete_person' person.id %}" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" onclick="return confirm('Are you sure you want to delete this contact?');">Delete</button>
-                </form>
-            </td>            
-        </tr>
-        {% endfor %}
-    </table>
+    <!--Place <script> inside <body>-->
+    <!--Ensure script is run after DOM is loaded and keeps HTML valid-->
+    <script>
+        function updateDeleteButton() {
+            //keep track checkbox with named="selected"
+            const checkboxes = document.querySelectorAll('input[name="selected"]:checked');
+            const btn = document.getElementById('delete-all-btn');
+            if (checkboxes.length > 0) {
+                btn.textContent = 'Delete Selected';
+                btn.name = 'delete_selected';
+            } else {
+                btn.textContent = 'Delete All';
+                btn.name = 'delete_all';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input[name="selected"]').forEach(cb => {
+                cb.addEventListener('change', updateDeleteButton);
+            });
+        });
+    </script>
+</body>
 
 </html>
