@@ -5,58 +5,108 @@
     <style>
         table, th, td { border: 1px solid black; border-collapse: collapse; }
         th, td { padding: 5px; }
+    
+        /* Dating app gradient for navbar */
+        .dating-navbar {
+            background: linear-gradient(90deg, #ff5e62 0%, #ff9966 100%);
+        }
+        /* Add top padding to prevent content from hiding under fixed navbar */
+        body {
+            padding-top: 70px;
+        }
     </style>
+    <!-- Bootstrap 4 CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <button type="submit" id="delete-all-btn" name="delete_all">Delete All</button>
-        <a href="{% url 'import_csv' %}"><button type="button">Import CSV</button></a>
-        <a href="{% url 'export_csv' %}"><button type="button">Export CSV</button></a>
-        <a href="{% url 'add_record' %}"><button type="button">Add Single Record</button></a>
-        <table>
-            <tr>
-                <td colspan="8" style="text-align: right; font-weight: bold;">
-                    No. of Contacts: {{ persons.count }}
-                </td>
-            </tr>
-            <tr>
-                <th></th>
-                <th>Hot Pic</th>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Preference</th>
-                <th>Availability</th>
-                <th>Edit</th>
-                <th>Delete</th>
-            </tr>
-            {% for person in persons %}
-            <tr>
-                <td><input type="checkbox" name="selected" value="{{ person.id }}"></td>
-                <td>
-                    {% if person.photo %}
-                        <img src="{{ person.photo.url }}" alt="Photo" width="200px">
-                    {% else %}
-                        <span title="No photo" style="font-size:2em; color:#ccc;">&#128247;</span>
-                    {% endif %}
-                </td>
-                <td>{{ person.first_name }} {{ person.last_name }}</td>
-                <td>{{ person.phone_number }}</td>
-                <td><a href="{% url 'preference' person.id %}">Preference</a></td>
-                <td><a href="{% url 'availability' person.id %}">Availability</a></td>
-                <td>
-                    <a href="{% url 'edit_person' person.id %}">Edit</a>
-                </td>
-                <td>
-                    <form method="post" action="{% url 'delete_person' person.id %}" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" onclick="return confirm('Are you sure you want to delete this contact?');">Delete</button>
-                    </form>
-                </td>            
-            </tr>
-            {% endfor %}
-        </table>
-    </form>
+    <nav class="navbar navbar-expand-sm navbar-dark dating-navbar fixed-top mb-3">
+        <div class="container">
+            <a href="#" class="navbar-brand font-weight-bold">OnlyFriends</a>
+            <button
+                class="navbar-toggler"
+                data-toggle="collapse"
+                data-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a href="{% url 'import_csv' %}" class="nav-link">Import CSV</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'export_csv' %}" class="nav-link">Export CSV</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'add_record' %}" class="nav-link">Add Single Record</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <button type="submit" id="delete-all-btn" name="delete_all"
+                class="btn mb-3"
+                style="background: linear-gradient(90deg, #ff5e62 0%, #ff9966 100%); 
+                    color: #fff; border: none; padding: 0.75em 2em; 
+                    font-weight: bold; box-shadow: 0 2px 8px rgba(255,94,98,0.1);"
+            >
+                Delete All
+            </button>
+            <!--Card layout-->
+            <div class="row">
+                {% for person in persons %}
+                <div class="col-md-4 mb-4">
+                    <div class="card bg-dark text-white h-100">
+                        <!-- Checkbox in top-right corner -->
+                        <input type="checkbox" name="selected" value="{{ person.id }}"
+                            style="position: absolute; top: 10px; right: 10px; z-index: 2; width: 1.5em; height: 1.5em;">
+                        {% if person.photo %}
+                            {% comment %} <img src="{{ person.photo.url }}" class="card-img" alt="{{ person.first_name }} {{ person.last_name }}"> {% endcomment %}
+                            <div class="card-img" style="height:500px; overflow:hidden; border-top-left-radius:.25rem; border-top-right-radius:.25rem;">
+                                <img src="{{ person.photo.url }}" alt="{{ person.first_name }} {{ person.last_name }}"
+                                    style="width:100%; height:100%; object-fit:cover; display:block;">
+                            </div>
+                        {% else %}
+                            {% comment %} <img src="https://via.placeholder.com/400x250?text=No+Photo" class="card-img" alt="No photo">&#128247;</img> {% endcomment %}
+                            <div class="card-img d-flex align-items-center justify-content-center" style="height:500px; font-size:5em; color:#ccc; background:#222;
+                                overflow:hidden; border-top-left-radius:.25rem; border-top-right-radius:.25rem;">
+                                &#128247;
+                            </div>
+                        {% endif %}
+                        <div class="card-img-overlay d-flex flex-column justify-content-end" style="background: rgba(0,0,0,0.3);">
+                            <h4 class="card-title">{{ person.first_name }} {{ person.last_name }}</h4>
+                            <h6 class="card-subtitle mb-2">{{ person.relationship_status|default:"-" }}</h6>
+                            <p class="card-text mb-1">
+                                <strong>Phone:</strong> {{ person.phone_number }}<br>
+                                <strong>Age:</strong> {{ person.age }}<br>
+                                <strong>Email:</strong> {{ person.email }}
+                            </p>
+                            <div class="mb-2">
+                                <a href="{% url 'preference' person.id %}" class="btn btn-sm btn-light">Preference</a>
+                                <a href="{% url 'availability' person.id %}" class="btn btn-sm btn-light">Availability</a>
+                                <a href="{% url 'edit_person' person.id %}" class="btn btn-sm btn-warning">Edit</a>
+                                <form method="post" action="{% url 'delete_person' person.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this contact?');">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                        {% comment %} <div class="card-footer text-muted">
+                            Added: {{ person.id }}
+                        </div> {% endcomment %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+    <br>
     <!--Place <script> inside <body>-->
     <!--Ensure script is run after DOM is loaded and keeps HTML valid-->
     <script>
@@ -78,6 +128,10 @@
             });
         });
     </script>
+    <!-- jQuery, Popper.js, and Bootstrap 4 JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
 </html>
