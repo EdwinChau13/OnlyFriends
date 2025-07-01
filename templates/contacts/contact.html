@@ -88,7 +88,15 @@
                                 <strong>Email:</strong> {{ person.email }}
                             </p>
                             <div class="mb-2">
-                                <a href="{% url 'preference' person.id %}" class="btn btn-sm btn-light">Preference</a>
+                                <a href="{% url 'preference' person.id %}" class="btn btn-sm btn-light preference-tooltip"
+                                    data-toggle="tooltip"
+                                    data-placement="bottom"
+                                    data-preference='{
+                                    "Birthday":"{{ person.preference.first.birthday|default:"-" }}",
+                                    "Movie":"{{ person.preference.first.favorite_movie_genre|default:"-" }}",
+                                    "Food":"{{ person.preference.first.favorite_food|default:"-" }}"}'>
+                                    Preference
+                                </a>
                                 <a href="{% url 'availability' person.id %}" class="btn btn-sm btn-light">Availability</a>
                                 <a href="{% url 'edit_person' person.id %}" class="btn btn-sm btn-warning">Edit</a>
                                 <form method="post" action="{% url 'delete_person' person.id %}" style="display:inline;">
@@ -107,6 +115,10 @@
         </form>
     </div>
     <br>
+    <!-- jQuery, Popper.js, and Bootstrap 4 JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <!--Place <script> inside <body>-->
     <!--Ensure script is run after DOM is loaded and keeps HTML valid-->
     <script>
@@ -128,10 +140,40 @@
             });
         });
     </script>
-    <!-- jQuery, Popper.js, and Bootstrap 4 JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!--Always load jQuery and Bootstrap JS before your custom script-->
+    <script>
+        {% comment %} $(function () {
+            $('[data-toggle="tooltip"]').tooltip({ html: true });
+        }) {% endcomment %}
+        $(function () {
+            /* 
+            Finds every element with a data-preference attribute and run the function for each one
+            The element is Preference button
+            */
+            $('[data-preference]').each(function() {
+                /* Stores the current element as jquery object */
+                var $this = $(this);
+                var preferences = $this.attr('data-preference');
+                try {
+                    /* Parse JSON string into a javascript object */
+                    preferences = JSON.parse(preferences);
+                } catch (e) {
+                    preferences = {};
+                }
+                var tooltipContent = '';
+                /* Loop through each key-value pair and build a html string*/
+                for (var key in preferences) {
+                    if (preferences.hasOwnProperty(key)) {
+                        tooltipContent += '<strong>' + key + ':</strong> ' + preferences[key] + '<br>';
+                    }
+                }
+                /* Set "title" attribute of Preference button to generated html string */
+                $this.attr('title', tooltipContent);
+                /* Initialize Bootstrap tooltip on the element, allowing html content true */
+                $this.tooltip({ html: true });
+            });
+        });
+    </script>
 </body>
 
 </html>

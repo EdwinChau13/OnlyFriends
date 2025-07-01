@@ -30,8 +30,7 @@ def import_csv(request):
         decoded_file = csv_file.read().decode('utf-8').splitlines()
         reader = csv.DictReader(decoded_file)
         imported = 0
-        image_base_path = '/Users/edwinchau/Downloads/girls/'
-        #image_base_path = '/Users/edwinchau/Desktop/OnlyFriends/media/photos/'
+        image_base_path = os.path.expanduser('~/Downloads/girls/')
         
         for row in reader:
             # Handle photo import
